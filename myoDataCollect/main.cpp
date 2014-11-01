@@ -15,9 +15,12 @@
 // provides several virtual functions for handling different kinds of events. If you do not override an event, the
 // default behavior is to do nothing.
 class DataCollector : public myo::DeviceListener {
-    
+
+    enum state{GOING_UP,GOING_DOWN};
 private:
-    float roll_us,pitch_us,yaw_us;
+    int roll_us,pitch_us,yaw_us;
+    int previous_pitch;
+    state curr_state;
     
 public:
     DataCollector()
@@ -26,6 +29,8 @@ public:
         pitch_us = 0;
         yaw_us = 0;
         onArm = false;
+        curr_state = GOING_DOWN;
+        previous_pitch = 0;
     }
     
     // onUnpair() is called whenever the Myo is disconnected from Myo Connect by the user.
@@ -56,9 +61,18 @@ public:
         float yaw = atan2(2.0f * (quat.w() * quat.z() + quat.x() * quat.y()),
                           1.0f - 2.0f * (quat.y() * quat.y() + quat.z() * quat.z()));
         
-        roll_us = ((roll + (float)M_PI)/(M_PI * 2.0f) * 100);
-        pitch_us = ((pitch + (float)M_PI/2.0f)/M_PI * 100);
-        yaw_us = ((yaw + (float)M_PI)/(M_PI * 2.0f) * 100);
+        roll_us = (int)((roll + (float)M_PI)/(M_PI * 2.0f) * 100);
+        pitch_us = (int)((pitch + (float)M_PI/2.0f)/M_PI * 100);
+        yaw_us = (int)((yaw + (float)M_PI)/(M_PI * 2.0f) * 100);
+        
+        if(curr_state == GOING_DOWN && pitch_us < previous_pitch){
+            curr_state = GOING_UP;
+            std::cout << "DRUM!!!!!!!!!!!!" << std::endl;
+        }else if(curr_state == GOING_UP && pitch_us > previous_pitch){
+            curr_state = GOING_DOWN;
+        }
+        
+        previous_pitch = pitch_us;
         
         
     }
@@ -88,6 +102,11 @@ public:
     {
         rewind(stdout);
         std::cout << "Roll:" << roll_us << " Pitch:" << pitch_us << " Yaw:" << yaw_us << std::endl;
+        /*if(curr_state == GOING_DOWN){
+            std::cout << "GOING DOWN" << std::endl;
+        }else if(curr_state == GOING_UP){
+            std::cout << "GOING UP" << std::endl;
+        }*/
         std::cout << std::flush;
     }
     
