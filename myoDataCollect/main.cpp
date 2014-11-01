@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <string>
 #include <algorithm>
+#include <stdlib.h>
 
 // The only file that needs to be included to use the Myo C++ SDK is myo.hpp.
 #include <myo/myo.hpp>
@@ -15,12 +16,16 @@
 // provides several virtual functions for handling different kinds of events. If you do not override an event, the
 // default behavior is to do nothing.
 class DataCollector : public myo::DeviceListener {
-
+    
     enum state{GOING_UP,GOING_DOWN};
 private:
     int roll_us,pitch_us,yaw_us;
     int previous_pitch;
     state curr_state;
+    bool calibrated;
+    int left, mid, right;
+    int low, high;
+    int top_pitch,bottom_pitch;
     
 public:
     DataCollector()
@@ -31,6 +36,14 @@ public:
         onArm = false;
         curr_state = GOING_DOWN;
         previous_pitch = 0;
+        calibrated = false;
+        left = 0;
+        mid = 0;
+        right = 0;
+        low = 0;
+        high = 0;
+        top_pitch = 0;
+        bottom_pitch = 0;
     }
     
     // onUnpair() is called whenever the Myo is disconnected from Myo Connect by the user.
@@ -44,10 +57,38 @@ public:
         onArm = false;
     }
     
+    // onPose() is called whenever the Myo detects that the person wearing it has changed their pose, for example,
+    // making a fist, or not making a fist anymore.
+    void onPose(myo::Myo* myo, uint64_t timestamp, myo::Pose pose)
+    {
+        if (!calibrated) {
+            if (pose == myo::Pose::fist) {
+                low = pitch_us;
+                mid = yaw_us;
+                if(whichArm == myo::Arm::armRight) {
+                    left = mid + 20;
+                    right = mid - 10;
+                }
+                else
+                {
+                    left = mid + 10;
+                    right = mid - 20;
+                }
+                high = low + 30;
+                calibrated = true;
+                std::cout << "CALIBRATED";
+                myo->vibrate(myo::Myo::vibrationMedium);
+            }
+        }
+        
+    }
+    
     // onOrientationData() is called whenever the Myo device provides its current orientation, which is represented
     // as a unit quaternion.
     void onOrientationData(myo::Myo* myo, uint64_t timestamp, const myo::Quaternion<float>& quat)
     {
+        
+        
         using std::atan2;
         using std::asin;
         using std::sqrt;
@@ -60,19 +101,78 @@ public:
         float pitch = asin(max(-1.0f, min(1.0f, 2.0f * (quat.w() * quat.y() - quat.z() * quat.x()))));
         float yaw = atan2(2.0f * (quat.w() * quat.z() + quat.x() * quat.y()),
                           1.0f - 2.0f * (quat.y() * quat.y() + quat.z() * quat.z()));
-        
+        int zone = 0;
         roll_us = (int)((roll + (float)M_PI)/(M_PI * 2.0f) * 100);
         pitch_us = (int)((pitch + (float)M_PI/2.0f)/M_PI * 100);
         yaw_us = (int)((yaw + (float)M_PI)/(M_PI * 2.0f) * 100);
         
-        if(curr_state == GOING_DOWN && pitch_us < previous_pitch){
-            curr_state = GOING_UP;
-            std::cout << "DRUM!!!!!!!!!!!!" << std::endl;
-        }else if(curr_state == GOING_UP && pitch_us > previous_pitch){
-            curr_state = GOING_DOWN;
-        }
         
-        previous_pitch = pitch_us;
+        if(calibrated){
+            if(curr_state == GOING_DOWN && pitch_us < previous_pitch){
+                curr_state = GOING_UP;
+                std::cout << "DRUM" << std::endl;
+                if (abs(mid - yaw_us) > 30) {
+                    if (mid > yaw_us)
+                        zone++;
+                    else
+                        zone--;
+                }
+                int abs_yaw = zone * 100 + yaw_us; //the absolute yaw position
+                
+                int zone2 = 0;
+                if (abs(low - pitch_us) > 40) {
+                    if (low > pitch_us) {
+                        zone2++;
+                    }
+                    else {
+                        zone2--;
+                    }
+                }
+                int abs_pitch = zone2 * 100 + pitch_us;
+                
+                if(whichArm == myo::Arm::armRight) {
+                    if (abs_pitch - 20 <= low && abs_pitch + 20 >= low) {
+                        if (abs_yaw > mid + 15) {
+                            std::cout << "LEFT DRUM";
+                        }
+                        else if (abs_yaw < mid - 10){
+                            std::cout << "RIGHT DRUM";
+                        }
+                    }
+                    else {
+                        if (abs_yaw > mid + 15) {
+                            std::cout << "LEFT CYMBAL";
+                        }
+                        else if (abs_yaw < mid - 10){
+                            std::cout << "RIGHT CYMBAL";
+                        }
+                    }
+                    
+                }
+                else {
+                    if (abs_pitch - 15 <= low && abs_pitch + 10 >= low) {
+                        if (abs_yaw > mid + 10) {
+                            std::cout << "LEFT DRUM";
+                        }
+                        else if (abs_yaw < mid - 15){
+                            std::cout << "RIGHT DRUM";
+                        }
+                    }
+                    else if (abs_pitch - 10 <= high && abs_pitch + 15 >= high) {
+                        if (abs_yaw > mid + 10) {
+                            std::cout << "LEFT CYMBAL";
+                        }
+                        else if (abs_yaw < mid - 15){
+                            std::cout << "RIGHT CYMBAL";
+                        }
+                    }
+                }
+            }else if(curr_state == GOING_UP && pitch_us > previous_pitch){
+                curr_state = GOING_DOWN;
+            }
+            
+            previous_pitch = pitch_us;
+        }
         
         
     }
@@ -100,14 +200,11 @@ public:
     // We define this function to print the current values that were updated by the on...() functions above.
     void print()
     {
-        rewind(stdout);
-        std::cout << "Roll:" << roll_us << " Pitch:" << pitch_us << " Yaw:" << yaw_us << std::endl;
-        /*if(curr_state == GOING_DOWN){
-            std::cout << "GOING DOWN" << std::endl;
-        }else if(curr_state == GOING_UP){
-            std::cout << "GOING UP" << std::endl;
-        }*/
-        std::cout << std::flush;
+        /*if(calibrated) {
+         rewind(stdout);
+         std::cout << "Roll:" << roll_us << " Pitch:" << pitch_us << " Yaw:" << yaw_us << std::endl;
+         std::cout << std::flush;
+         }*/
     }
     
     // These values are set by onArmRecognized() and onArmLost() above.
@@ -115,6 +212,8 @@ public:
     myo::Arm whichArm;
     
 };
+
+
 
 int main(int argc, char** argv)
 {

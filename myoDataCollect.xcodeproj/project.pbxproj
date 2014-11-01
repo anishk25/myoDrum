@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		78BD72561A04B1D70082E266 /* myo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78BD72551A04B1D70082E266 /* myo.framework */; };
+		78BD72571A04B1DC0082E266 /* myo.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 78BD72551A04B1D70082E266 /* myo.framework */; };
 		FD688B3D1A04932D0030BF47 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FD688B3C1A04932D0030BF47 /* main.cpp */; };
-		FD688B461A0494B60030BF47 /* myo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FD688B451A0494B60030BF47 /* myo.framework */; };
-		FD688B471A0495EE0030BF47 /* myo.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = FD688B451A0494B60030BF47 /* myo.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -19,16 +19,16 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
-				FD688B471A0495EE0030BF47 /* myo.framework in CopyFiles */,
+				78BD72571A04B1DC0082E266 /* myo.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		78BD72551A04B1D70082E266 /* myo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = myo.framework; sourceTree = "<group>"; };
 		FD688B391A04932D0030BF47 /* myoDataCollect */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = myoDataCollect; sourceTree = BUILT_PRODUCTS_DIR; };
 		FD688B3C1A04932D0030BF47 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		FD688B451A0494B60030BF47 /* myo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = myo.framework; path = ../../../Downloads/sdk/myo.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,7 +36,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FD688B461A0494B60030BF47 /* myo.framework in Frameworks */,
+				78BD72561A04B1D70082E266 /* myo.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -46,7 +46,7 @@
 		FD688B301A04932D0030BF47 = {
 			isa = PBXGroup;
 			children = (
-				FD688B451A0494B60030BF47 /* myo.framework */,
+				78BD72551A04B1D70082E266 /* myo.framework */,
 				FD688B3B1A04932D0030BF47 /* myoDataCollect */,
 				FD688B3A1A04932D0030BF47 /* Products */,
 			);
