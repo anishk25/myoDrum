@@ -23,8 +23,13 @@ public class MainActivity extends ActionBarActivity {
 	private SoundPool soundPool;
 	private int soundIDSnare;
 	private int soundIDhh; 
+	private int soundIDride;
+	private int soundIDcrash; 
+	boolean ride_loaded = false;
+	boolean crash_loaded = false;
 	boolean snare_loaded = false;
 	boolean hh_loaded = false;
+	
 	private static final String TAG = "MainActivity";
 
 	@Override
@@ -40,6 +45,8 @@ public class MainActivity extends ActionBarActivity {
 				System.out.println("yolo");
 				snare_loaded = true;
 				hh_loaded = true; 
+				ride_loaded = true;
+				crash_loaded = true;
 			}
 		});
 		/*soundPoolhh = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
@@ -53,8 +60,11 @@ public class MainActivity extends ActionBarActivity {
 		});*/
 		soundIDSnare = soundPool.load(this, R.raw.shortsnare, 1);
 		soundIDhh = soundPool.load(this, R.raw.shorthh, 1);
+		soundIDride = soundPool.load(this,  R.raw.shortride, 1);
+		soundIDcrash = soundPool.load(this, R.raw.shortcrash, 1);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
 		Button snare = (Button) findViewById(R.id.button1);
 
 		snare.setOnClickListener(new OnClickListener() {
@@ -93,6 +103,50 @@ public class MainActivity extends ActionBarActivity {
 				Log.e("Test", String.valueOf(hh_loaded));
 				if (hh_loaded) {
 					soundPool.play(soundIDhh, volume, volume, 1, 0, 1f);
+					Log.e("Test", "Played sound");
+				}
+			}
+		});
+		
+		Button ride = (Button) findViewById(R.id.button3);
+
+		ride.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				// Getting the user sound settings
+				AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+				float actualVolume = (float) audioManager
+						.getStreamVolume(AudioManager.STREAM_MUSIC);
+				float maxVolume = (float) audioManager
+						.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+				float volume = maxVolume;
+				// Is the sound loaded already?
+				Log.e("Test", String.valueOf(ride_loaded));
+				if (ride_loaded) {
+					soundPool.play(soundIDride, volume, volume, 1, 0, 1f);
+					Log.e("Test", "Played sound");
+				}
+			}
+		});
+		
+		Button crash = (Button) findViewById(R.id.button4);
+
+		crash.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				// Getting the user sound settings
+				AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+				float actualVolume = (float) audioManager
+						.getStreamVolume(AudioManager.STREAM_MUSIC);
+				float maxVolume = (float) audioManager
+						.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+				float volume = maxVolume;
+				// Is the sound loaded already?
+				Log.e("Test", String.valueOf(crash_loaded));
+				if (crash_loaded) {
+					soundPool.play(soundIDcrash, volume, volume, 1, 0, 1f);
 					Log.e("Test", "Played sound");
 				}
 			}
