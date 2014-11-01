@@ -115,7 +115,7 @@ public:
             drum_side d_side = MIDDLE;
             drum_height d_height = LOW;
             
-            
+           
             if(curr_state == GOING_DOWN && pitch_us < previous_pitch){
                 curr_state = GOING_UP;
                 std::cout << "Pitch:" << pitch_us << " Yaw:" << yaw_us << std::endl;
@@ -179,11 +179,11 @@ public:
     // We define this function to print the current values that were updated by the on...() functions above.
     void print()
     {
-        /*if(calibrated) {
+        if(calibrated) {
          rewind(stdout);
          std::cout << "Roll:" << roll_us << " Pitch:" << pitch_us << " Yaw:" << yaw_us << std::endl;
          std::cout << std::flush;
-         }*/
+         }
     }
     
     // These values are set by onArmRecognized() and onArmLost() above.

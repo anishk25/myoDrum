@@ -1,39 +1,46 @@
 package com.example.drums;
 
+
+import com.thalmic.myo.DeviceListener;
+import com.thalmic.myo.Hub;
+
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
+import android.widget.Toast;
 
 
 import android.support.v7.app.ActionBarActivity;
+import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.media.SoundPool.OnLoadCompleteListener;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
 
-public class MainActivity extends ActionBarActivity {
+
+public class MainActivity extends ActionBarActivity implements DrumHitListener  {
 	private SoundPool soundPool;
-	private int soundIDSnare;
-	private int soundIDhh; 
-	private int soundIDride;
-	private int soundIDcrash; 
 	boolean ride_loaded = false;
 	boolean crash_loaded = false;
 	boolean snare_loaded = false;
 	boolean hh_loaded = false;
 	
+	private int [] soundIDS = new int [4];
 	private static final String TAG = "MainActivity";
+	private MyoDrum myoDrum;
+	private Hub hub;
+	private static final int REQUEST_ENABLE_BT = 1;
+	private TextView textReadings, tvCalib;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
 		// Set the hardware buttons to control the music
 		this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 		// Load the sound
@@ -42,115 +49,36 @@ public class MainActivity extends ActionBarActivity {
 			@Override
 			public void onLoadComplete(SoundPool soundPool, int sampleId,
 					int status) {
-				System.out.println("yolo");
 				snare_loaded = true;
 				hh_loaded = true; 
 				ride_loaded = true;
 				crash_loaded = true;
 			}
 		});
-		/*soundPoolhh = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
-		soundPoolhh.setOnLoadCompleteListener(new OnLoadCompleteListener() {
-			@Override
-			public void onLoadComplete(SoundPool soundPool, int sampleId,
-					int status) {
-				System.out.println("yolo");
-				hh_loaded = true;
-			}
-		});*/
-		soundIDSnare = soundPool.load(this, R.raw.shortsnare, 1);
-		soundIDhh = soundPool.load(this, R.raw.shorthh, 1);
-		soundIDride = soundPool.load(this,  R.raw.shortride, 1);
-		soundIDcrash = soundPool.load(this, R.raw.shortcrash, 1);
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		
-		Button snare = (Button) findViewById(R.id.button1);
+		loadSounds();
+		textReadings = (TextView)findViewById(R.id.myoText);
+		tvCalib = (TextView)findViewById(R.id.tvCalib);
+		myoDrum = new MyoDrum(this,textReadings,tvCalib);
+		loadMyoHub();
+	}
+	
+	public void loadMyoHub(){
+		hub = Hub.getInstance();
+        if (!hub.init(this, getPackageName())) {
+            // We can't do anything with the Myo device if the Hub can't be initialized, so exit.
+            Toast.makeText(this, "Couldn't initialize Hub", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
-		snare.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				// TODO Auto-generated method stub
-				// Getting the user sound settings
-				AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-				float actualVolume = (float) audioManager
-						.getStreamVolume(AudioManager.STREAM_MUSIC);
-				float maxVolume = (float) audioManager
-						.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-				float volume = actualVolume / maxVolume;
-				// Is the sound loaded already?
-				if (snare_loaded) {
-					soundPool.play(soundIDSnare, volume, volume, 1, 0, 1f);
-					Log.e("Test", "Played sound");
-				}
-			}
-		});
-
-		Button hh = (Button) findViewById(R.id.button2);
-
-		hh.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				// TODO Auto-generated method stub
-				// Getting the user sound settings
-				AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-				float actualVolume = (float) audioManager
-						.getStreamVolume(AudioManager.STREAM_MUSIC);
-				float maxVolume = (float) audioManager
-						.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-				float volume = maxVolume;
-				// Is the sound loaded already?
-				Log.e("Test", String.valueOf(hh_loaded));
-				if (hh_loaded) {
-					soundPool.play(soundIDhh, volume, volume, 1, 0, 1f);
-					Log.e("Test", "Played sound");
-				}
-			}
-		});
-		
-		Button ride = (Button) findViewById(R.id.button3);
-
-		ride.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				// TODO Auto-generated method stub
-				// Getting the user sound settings
-				AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-				float actualVolume = (float) audioManager
-						.getStreamVolume(AudioManager.STREAM_MUSIC);
-				float maxVolume = (float) audioManager
-						.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-				float volume = maxVolume;
-				// Is the sound loaded already?
-				Log.e("Test", String.valueOf(ride_loaded));
-				if (ride_loaded) {
-					soundPool.play(soundIDride, volume, volume, 1, 0, 1f);
-					Log.e("Test", "Played sound");
-				}
-			}
-		});
-		
-		Button crash = (Button) findViewById(R.id.button4);
-
-		crash.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				// TODO Auto-generated method stub
-				// Getting the user sound settings
-				AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-				float actualVolume = (float) audioManager
-						.getStreamVolume(AudioManager.STREAM_MUSIC);
-				float maxVolume = (float) audioManager
-						.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-				float volume = maxVolume;
-				// Is the sound loaded already?
-				Log.e("Test", String.valueOf(crash_loaded));
-				if (crash_loaded) {
-					soundPool.play(soundIDcrash, volume, volume, 1, 0, 1f);
-					Log.e("Test", "Played sound");
-				}
-			}
-		});
+        // Next, register for DeviceListener callbacks.
+        Hub.getInstance().addListener((DeviceListener)myoDrum);
+	}
+	public void loadSounds(){
+		soundIDS[0] = soundPool.load(this, R.raw.shortsnare, 1);
+		soundIDS[1] = soundPool.load(this, R.raw.shorthh, 1);
+		soundIDS[2] = soundPool.load(this,  R.raw.shortride, 1);
+		soundIDS[3] = soundPool.load(this, R.raw.shortcrash, 1);
 	}
 
 	public void onPrepared(MediaPlayer player) {
@@ -165,15 +93,65 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (R.id.action_scan == id) {
+           Hub.getInstance().pairWithAnyMyo();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+	
+	
+
+	@Override
+	public void OnDrumHit(int drumNumber) {
+		AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+		float actualVolume = (float) audioManager
+				.getStreamVolume(AudioManager.STREAM_MUSIC);
+		float maxVolume = (float) audioManager
+				.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+		float volume = actualVolume / maxVolume;
+		// Is the sound loaded already?
+		if (snare_loaded) {
+			soundPool.play(soundIDS[drumNumber], volume, volume, 1, 0, 1f);
+			Log.e("Test", "Played sound");
 		}
-		return super.onOptionsItemSelected(item);
+		
 	}
+	
+	 @Override
+	    protected void onDestroy() {
+	        super.onDestroy();
+	        // We don't want any callbacks when the Activity is gone, so unregister the listener.
+	        Hub.getInstance().removeListener(myoDrum);
+
+	        if (isFinishing()) {
+	            // The Activity is finishing, so shutdown the Hub. This will disconnect from the Myo.
+	            Hub.getInstance().shutdown();
+	        }
+	   }
+	 
+	 @Override
+	    protected void onResume() {
+	        super.onResume();
+
+	        // If Bluetooth is not enabled, request to turn it on.
+	        if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+	            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+	            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+	        }
+	    }
+	 
+	 @Override
+	    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	        // User chose not to enable Bluetooth, so exit.
+	        if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
+	            finish();
+	            return;
+	        }
+	        super.onActivityResult(requestCode, resultCode, data);
+	    }
+
 
 }
