@@ -69,13 +69,13 @@ public:
                 low = pitch_us;
                 mid = yaw_us;
                 if(whichArm == myo::Arm::armRight) {
-                    left = mid + 25;
+                    left = mid + 45;
                     right = mid - 10;
                 }
                 else
                 {
-                    left = mid + 15;
-                    right = mid - 25;
+                    left = mid + 10;
+                    right = mid - 45;
                 }
                 high = low + 40;
                 calibrated = true;
@@ -115,6 +115,7 @@ public:
             drum_side d_side = MIDDLE;
             drum_height d_height = LOW;
             
+            
             if(curr_state == GOING_DOWN && pitch_us < previous_pitch){
                 curr_state = GOING_UP;
                 std::cout << "Pitch:" << pitch_us << " Yaw:" << yaw_us << std::endl;
@@ -141,6 +142,8 @@ public:
                     }else if(d_height == HIGH){
                         std::cout << "SYMBOL LEFT" << std::endl;
                     }
+                }else if(d_side == MIDDLE && d_height == HIGH){
+                    std::cout << "SYMBOL MIDDLE" << std::endl;
                 }
                
             }else if(curr_state == GOING_UP && pitch_us > previous_pitch){
