@@ -18,6 +18,8 @@
 class DataCollector : public myo::DeviceListener {
     
     enum state{GOING_UP,GOING_DOWN};
+    enum drum_side{LEFT,RIGHT,MIDDLE};
+    enum drum_height{LOW,HIGH};
 private:
     int roll_us,pitch_us,yaw_us;
     int previous_pitch;
@@ -26,6 +28,7 @@ private:
     int left, mid, right;
     int low, high;
     int top_pitch,bottom_pitch;
+    
     
 public:
     DataCollector()
@@ -66,17 +69,18 @@ public:
                 low = pitch_us;
                 mid = yaw_us;
                 if(whichArm == myo::Arm::armRight) {
-                    left = mid + 20;
+                    left = mid + 45;
                     right = mid - 10;
                 }
                 else
                 {
                     left = mid + 10;
-                    right = mid - 20;
+                    right = mid - 45;
                 }
-                high = low + 30;
+                high = low + 40;
                 calibrated = true;
-                std::cout << "CALIBRATED";
+                std::cout << "CALIBRATED" << std::endl;
+                std::cout << "Left:" << left << " Right:" << right << " Low:" << low << " High:" << high << std::endl;
                 myo->vibrate(myo::Myo::vibrationMedium);
             }
         }
@@ -101,72 +105,47 @@ public:
         float pitch = asin(max(-1.0f, min(1.0f, 2.0f * (quat.w() * quat.y() - quat.z() * quat.x()))));
         float yaw = atan2(2.0f * (quat.w() * quat.z() + quat.x() * quat.y()),
                           1.0f - 2.0f * (quat.y() * quat.y() + quat.z() * quat.z()));
-        int zone = 0;
-        roll_us = (int)((roll + (float)M_PI)/(M_PI * 2.0f) * 100);
-        pitch_us = (int)((pitch + (float)M_PI/2.0f)/M_PI * 100);
-        yaw_us = (int)((yaw + (float)M_PI)/(M_PI * 2.0f) * 100);
+        
+        roll_us = (int)((roll + (float)M_PI)/(M_PI * 2.0f) * 200);
+        pitch_us = (int)((pitch + (float)M_PI/2.0f)/M_PI * 200);
+        yaw_us = (int)((yaw + (float)M_PI)/(M_PI * 2.0f) * 200);
         
         
         if(calibrated){
+            drum_side d_side = MIDDLE;
+            drum_height d_height = LOW;
+            
+            
             if(curr_state == GOING_DOWN && pitch_us < previous_pitch){
                 curr_state = GOING_UP;
-                std::cout << "DRUM" << std::endl;
-                if (abs(mid - yaw_us) > 30) {
-                    if (mid > yaw_us)
-                        zone++;
-                    else
-                        zone--;
-                }
-                int abs_yaw = zone * 100 + yaw_us; //the absolute yaw position
+                std::cout << "Pitch:" << pitch_us << " Yaw:" << yaw_us << std::endl;
                 
-                int zone2 = 0;
-                if (abs(low - pitch_us) > 40) {
-                    if (low > pitch_us) {
-                        zone2++;
-                    }
-                    else {
-                        zone2--;
-                    }
+                if(yaw_us <= right){
+                    d_side = RIGHT;
+                }else if(yaw_us >= left){
+                    d_side = LEFT;
                 }
-                int abs_pitch = zone2 * 100 + pitch_us;
                 
-                if(whichArm == myo::Arm::armRight) {
-                    if (abs_pitch - 20 <= low && abs_pitch + 20 >= low) {
-                        if (abs_yaw > mid + 15) {
-                            std::cout << "LEFT DRUM";
-                        }
-                        else if (abs_yaw < mid - 10){
-                            std::cout << "RIGHT DRUM";
-                        }
-                    }
-                    else {
-                        if (abs_yaw > mid + 15) {
-                            std::cout << "LEFT CYMBAL";
-                        }
-                        else if (abs_yaw < mid - 10){
-                            std::cout << "RIGHT CYMBAL";
-                        }
-                    }
-                    
+                if(pitch_us >= high){
+                    d_height = HIGH;
                 }
-                else {
-                    if (abs_pitch - 15 <= low && abs_pitch + 10 >= low) {
-                        if (abs_yaw > mid + 10) {
-                            std::cout << "LEFT DRUM";
-                        }
-                        else if (abs_yaw < mid - 15){
-                            std::cout << "RIGHT DRUM";
-                        }
+                
+                if(d_side == RIGHT){
+                    if(d_height == LOW){
+                        std::cout << "SNARE RIGHT" << std::endl;
+                    }else if(d_height == HIGH){
+                        std::cout << "SYMBOL RIGHT" << std::endl;
                     }
-                    else if (abs_pitch - 10 <= high && abs_pitch + 15 >= high) {
-                        if (abs_yaw > mid + 10) {
-                            std::cout << "LEFT CYMBAL";
-                        }
-                        else if (abs_yaw < mid - 15){
-                            std::cout << "RIGHT CYMBAL";
-                        }
+                }else if(d_side == LEFT){
+                    if(d_height == LOW){
+                        std::cout << "SNARE LEFT" << std::endl;
+                    }else if(d_height == HIGH){
+                        std::cout << "SYMBOL LEFT" << std::endl;
                     }
+                }else if(d_side == MIDDLE && d_height == HIGH){
+                    std::cout << "SYMBOL MIDDLE" << std::endl;
                 }
+               
             }else if(curr_state == GOING_UP && pitch_us > previous_pitch){
                 curr_state = GOING_DOWN;
             }
