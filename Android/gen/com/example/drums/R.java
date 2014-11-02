@@ -1660,7 +1660,7 @@ containing a value of this type.
         public static final int action_mode_bar=0x7f0c0030;
         public static final int action_mode_bar_stub=0x7f0c002f;
         public static final int action_mode_close_button=0x7f0c0022;
-        public static final int action_scan=0x7f0c0048;
+        public static final int action_scan=0x7f0c0049;
         public static final int activity_chooser_view_content=0x7f0c0023;
         public static final int always=0x7f0c0014;
         public static final int beginning=0x7f0c001b;
@@ -1685,12 +1685,12 @@ containing a value of this type.
         public static final int list_item=0x7f0c0027;
         public static final int middle=0x7f0c001d;
         public static final int myoText=0x7f0c0041;
-        public static final int myosdk__action_scan=0x7f0c0049;
-        public static final int myosdk__connection_state_dot=0x7f0c0046;
-        public static final int myosdk__firmware_incompatible_text=0x7f0c0044;
-        public static final int myosdk__fragment_scan=0x7f0c0043;
-        public static final int myosdk__progress=0x7f0c0045;
-        public static final int myosdk__scan_result_view=0x7f0c0047;
+        public static final int myosdk__action_scan=0x7f0c004a;
+        public static final int myosdk__connection_state_dot=0x7f0c0047;
+        public static final int myosdk__firmware_incompatible_text=0x7f0c0045;
+        public static final int myosdk__fragment_scan=0x7f0c0044;
+        public static final int myosdk__progress=0x7f0c0046;
+        public static final int myosdk__scan_result_view=0x7f0c0048;
         public static final int never=0x7f0c0017;
         public static final int none=0x7f0c000f;
         public static final int normal=0x7f0c000b;
@@ -1717,6 +1717,7 @@ containing a value of this type.
         public static final int title=0x7f0c0029;
         public static final int top=0x7f0c001f;
         public static final int tvCalib=0x7f0c0042;
+        public static final int tvRSSI=0x7f0c0043;
         public static final int up=0x7f0c0001;
         public static final int useLogo=0x7f0c0013;
         public static final int withText=0x7f0c0018;

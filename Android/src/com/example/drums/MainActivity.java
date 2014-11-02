@@ -35,7 +35,7 @@ public class MainActivity extends ActionBarActivity implements DrumHitListener  
 	private MyoDrum myoDrum;
 	private Hub hub;
 	private static final int REQUEST_ENABLE_BT = 1;
-	private TextView textReadings, tvCalib;
+	private TextView textReadings, tvCalib,tvRSSI;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +58,9 @@ public class MainActivity extends ActionBarActivity implements DrumHitListener  
 		loadSounds();
 		textReadings = (TextView)findViewById(R.id.myoText);
 		tvCalib = (TextView)findViewById(R.id.tvCalib);
-		myoDrum = new MyoDrum(this,textReadings,tvCalib);
+		tvRSSI = (TextView)findViewById(R.id.tvRSSI);
+		myoDrum = new MyoDrum(this,textReadings,tvCalib,tvRSSI);
+		
 		loadMyoHub();
 	}
 	

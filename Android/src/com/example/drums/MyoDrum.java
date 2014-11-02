@@ -16,17 +16,20 @@ public class MyoDrum extends AbstractDeviceListener  {
 	private Arm mArm = Arm.UNKNOWN;
 	private boolean calibrated = false;
 	private int roll,pitch,yaw;
+	private int calibrate_num = 0;
 	
 	private int previous_pitch;
 	private DRUM_STATE drum_state;
-	private float LEFT_YAW,RIGHT_YAW,MIDDLE_YAW,LOW_PITCH,TOP_PITCH;
+	private float LEFT_YAW,RIGHT_YAW,MIDDLE_YAW,TOPLEFT_YAW,TOPRIGHT_YAW,LOW_PITCH,TOPMIDDLE_PITCH,
+		TOPLEFT_PITCH, TOPRIGHT_PITCH;
 	private DrumHitListener drumListener;
-	private TextView tvReadings,tvCalib;
+	private TextView tvReadings,tvCalib,tvDrumType;
 	
-	public MyoDrum(DrumHitListener dListener, TextView tvReadings,TextView calib){
+	public MyoDrum(DrumHitListener dListener, TextView tvReadings,TextView calib,TextView tvDrumType){
 		this.drumListener = dListener;
 		this.tvReadings = tvReadings;
 		this.tvCalib = calib;
+		this.tvDrumType = tvDrumType;
 	}
 	
 	 @Override
@@ -58,20 +61,34 @@ public class MyoDrum extends AbstractDeviceListener  {
 	 @Override
 	 public void onPose (Myo myo, long timestamp, Pose pose){
 		 if(pose == Pose.FIST && !calibrated){
-			 calibrated = true;
-			 drum_state = DRUM_STATE.GOING_DOWN;
-			 LOW_PITCH = pitch;
-			 TOP_PITCH = LOW_PITCH + 40;
-			 MIDDLE_YAW = yaw;
-			 if(mArm == Arm.RIGHT){
-				 LEFT_YAW = MIDDLE_YAW + 45;
-				 RIGHT_YAW = MIDDLE_YAW - 10;
-			 }else{
-				 LEFT_YAW = MIDDLE_YAW + 10;
-				 RIGHT_YAW = MIDDLE_YAW - 45;
+			 switch (calibrate_num) {
+			 case 0:
+				 MIDDLE_YAW = yaw;
+				 break;
+			 case 1:
+				 LEFT_YAW = yaw;
+				 break;
+			 case 2:
+				 TOPLEFT_YAW = yaw;
+				 TOPLEFT_PITCH = pitch;
+				 break;
+			 case 3:
+				 TOPMIDDLE_PITCH = pitch;
+				 break;
+			 case 4:
+				 TOPRIGHT_YAW = yaw;
+				 break;
+			 case 5:
+				 RIGHT_YAW = yaw;
+				 break;
 			 }
 			 myo.vibrate(Myo.VibrationType.MEDIUM);
-			 tvCalib.setText("Calibrated!");
+			 calibrate_num++;
+			 if(calibrate_num >= 6) {
+				 calibrated = true;
+				 drum_state = DRUM_STATE.GOING_DOWN;
+				 tvCalib.setText("middle_yaw:" + MIDDLE_YAW + " left_yaw:" + LEFT_YAW + " right_yaw:" + RIGHT_YAW + " top_left:" + TOPLEFT_YAW + " top_right:" + TOPRIGHT_YAW );
+			 }			 
 		 }
 	 }
 	 
@@ -86,13 +103,37 @@ public class MyoDrum extends AbstractDeviceListener  {
         roll = (int)((l_roll + (float)Math.PI)/(Math.PI * 2.0f));
         pitch= (int)((l_pitch + (float)Math.PI/2.0f)/Math.PI);
         yaw = (int)((l_yaw + (float)Math.PI)/(Math.PI * 2.0f));
-
+        myo.requestRssi();
         
-        tvReadings.setText("Roll:" + roll + " Pitch:" + pitch + " Yaw:" + yaw);
+       tvReadings.setText("Roll:" + roll + " Pitch:" + pitch + " Yaw:" + yaw);
         if(calibrated){
         	if(drum_state == DRUM_STATE.GOING_DOWN && pitch < previous_pitch){
         		drum_state = DRUM_STATE.GOING_UP;
-        		drumListener.OnDrumHit(0);
+        		if(pitch >= TOPMIDDLE_PITCH) { //top
+        			if(yaw >= TOPLEFT_YAW) {
+        				drumListener.OnDrumHit(1);
+        				tvDrumType.setText("LEFT CYMBAL");
+            		}
+        			else if(yaw <= TOPRIGHT_YAW) {
+        				drumListener.OnDrumHit(2);
+        				tvDrumType.setText("RIGHT CYMBAL");
+        			}
+        			else {
+        				drumListener.OnDrumHit(3);
+        				tvDrumType.setText("MIDDLE CYMBAL");
+        			}
+        		}
+        		else if(pitch <= LOW_PITCH + 10){ //bottom
+        			if(yaw >= LEFT_YAW) {
+        				drumListener.OnDrumHit(0);
+        				tvDrumType.setText("LEFT SNARE");
+            		}
+        			else if(yaw <= RIGHT_YAW) {
+        				drumListener.OnDrumHit(0);
+        				tvDrumType.setText("RIGHT SNARE");
+        			}
+        		}
+        		
         	}else if(drum_state == DRUM_STATE.GOING_UP && pitch > previous_pitch){
                 drum_state = DRUM_STATE.GOING_DOWN;
             }
@@ -100,6 +141,7 @@ public class MyoDrum extends AbstractDeviceListener  {
         previous_pitch = pitch;
         
      }
+	
 	 
 	
 	

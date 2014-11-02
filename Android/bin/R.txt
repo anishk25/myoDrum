@@ -356,7 +356,7 @@ int id action_menu_presenter 0x7f0c0006
 int id action_mode_bar 0x7f0c0030
 int id action_mode_bar_stub 0x7f0c002f
 int id action_mode_close_button 0x7f0c0022
-int id action_scan 0x7f0c0048
+int id action_scan 0x7f0c0049
 int id activity_chooser_view_content 0x7f0c0023
 int id always 0x7f0c0014
 int id beginning 0x7f0c001b
@@ -381,12 +381,12 @@ int id listMode 0x7f0c000a
 int id list_item 0x7f0c0027
 int id middle 0x7f0c001d
 int id myoText 0x7f0c0041
-int id myosdk__action_scan 0x7f0c0049
-int id myosdk__connection_state_dot 0x7f0c0046
-int id myosdk__firmware_incompatible_text 0x7f0c0044
-int id myosdk__fragment_scan 0x7f0c0043
-int id myosdk__progress 0x7f0c0045
-int id myosdk__scan_result_view 0x7f0c0047
+int id myosdk__action_scan 0x7f0c004a
+int id myosdk__connection_state_dot 0x7f0c0047
+int id myosdk__firmware_incompatible_text 0x7f0c0045
+int id myosdk__fragment_scan 0x7f0c0044
+int id myosdk__progress 0x7f0c0046
+int id myosdk__scan_result_view 0x7f0c0048
 int id never 0x7f0c0017
 int id none 0x7f0c000f
 int id normal 0x7f0c000b
@@ -413,6 +413,7 @@ int id tabMode 0x7f0c000c
 int id title 0x7f0c0029
 int id top 0x7f0c001f
 int id tvCalib 0x7f0c0042
+int id tvRSSI 0x7f0c0043
 int id up 0x7f0c0001
 int id useLogo 0x7f0c0013
 int id withText 0x7f0c0018

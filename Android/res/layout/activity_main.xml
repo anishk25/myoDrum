@@ -23,4 +23,13 @@
         android:layout_marginTop="22dp"
         android:text="Not Calibrated" />
 
+    <TextView
+        android:id="@+id/tvRSSI"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/tvCalib"
+        android:layout_below="@+id/tvCalib"
+        android:layout_marginTop="28dp"
+        android:text="Drum Type Here" />
+
 </RelativeLayout>
