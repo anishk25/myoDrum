@@ -1,13 +1,21 @@
 package com.example.drums;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.thalmic.myo.DeviceListener;
 import com.thalmic.myo.Hub;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,6 +24,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
+import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
@@ -23,7 +32,7 @@ import android.media.SoundPool.OnLoadCompleteListener;
 import android.util.Log;
 
 
-public class MainActivity extends ActionBarActivity implements DrumHitListener  {
+public class MainActivity extends ActionBarActivity implements DrumHitListener, OnClickListener  {
 	private SoundPool soundPool;
 	boolean ride_loaded = false;
 	boolean crash_loaded = false;
@@ -36,12 +45,15 @@ public class MainActivity extends ActionBarActivity implements DrumHitListener  
 	private Hub hub;
 	private static final int REQUEST_ENABLE_BT = 1;
 	private TextView textReadings, tvCalib,tvRSSI;
-	
+	private ImageView hihat, crash, ride, snare, tom;
 	private long start_time,end_time;
 	private AudioManager audioManager;
 	float actualVolume,maxVolume ,volume;
 	//private final float [] sound_rates = {1.5f,1.4f,2f,2f,1.3f};
 	private final float [] sound_rates = {2f,2f,2f,2f,2f};
+	private Map<Integer,ImageView> map;
+	private Map<ImageView,ImageView> white;
+	private Button reset;
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -57,7 +69,23 @@ public class MainActivity extends ActionBarActivity implements DrumHitListener  
 		tvCalib = (TextView)findViewById(R.id.tvCalib);
 		tvRSSI = (TextView)findViewById(R.id.tvRSSI);
 		myoDrum = new MyoDrum(this,textReadings,tvCalib,tvRSSI);
+		tvCalib.setTextColor(Color.WHITE);
+		tvRSSI.setTextColor(Color.WHITE);
 		
+		hihat = (ImageView)findViewById(R.id.imageView4);
+		crash = (ImageView)findViewById(R.id.imageView5);
+		ride = (ImageView)findViewById(R.id.imageView1);
+		snare = (ImageView)findViewById(R.id.imageView3);
+		tom = (ImageView)findViewById(R.id.imageView2);
+		reset = (Button)findViewById(R.id.reset);
+		reset.setOnClickListener(this);
+		
+	    map = new HashMap<Integer,ImageView>();
+		map.put(0, snare);
+		map.put(1,hihat);
+		map.put(2, ride);
+		map.put(3, crash);
+		map.put(4, tom);
 		loadMyoHub();
 	}
 	
@@ -120,6 +148,17 @@ public class MainActivity extends ActionBarActivity implements DrumHitListener  
 	@Override
 	public void OnDrumHit(int drumNumber) {
 		soundPool.play(soundIDS[drumNumber], volume, volume, 1, 0, sound_rates[drumNumber]);
+		final ImageView i = map.get(drumNumber);
+		Handler handler = new Handler(); 
+		i.setImageResource(R.drawable.crash_white);
+		handler.postDelayed(new Runnable() {
+		    public void run() {
+		     // Actions to do after 10 seconds
+		    	i.setImageResource(R.drawable.crash);
+		    }
+		}, 500);
+		
+		
 	}
 	
 	
@@ -156,6 +195,17 @@ public class MainActivity extends ActionBarActivity implements DrumHitListener  
 	        }
 	        super.onActivityResult(requestCode, resultCode, data);
 	    }
+
+
+	@Override
+	public void onClick(View v) {
+		switch(v.getId()){
+		case R.id.reset:
+			myoDrum.resetCalib();
+			break;
+		}
+		
+	}
 
 	
 

@@ -43,6 +43,12 @@ public class MyoDrum extends AbstractDeviceListener  {
 		kalmanFilter2 = new KalmanFilter();
 	}
 	
+	public void resetCalib(){
+		calibrate_num = 0;
+		calibrated = false;
+		tvCalib.setText("Not Calibrated");
+	}
+	
 	 @Override
      public void onConnect(Myo myo, long timestamp) {
          // Set the text color of the text view to cyan when a Myo connects.
