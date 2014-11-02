@@ -10,6 +10,7 @@ import com.thalmic.myo.Hub;
 import com.thalmic.myo.Myo;
 import com.thalmic.myo.Pose;
 import com.thalmic.myo.Quaternion;
+import com.thalmic.myo.Vector3;
 import com.thalmic.myo.XDirection;
 
 public class MyoDrum extends AbstractDeviceListener  {
@@ -17,6 +18,9 @@ public class MyoDrum extends AbstractDeviceListener  {
 	private boolean calibrated = false;
 	private int roll,pitch,yaw;
 	private int calibrate_num = 0;
+	double gyro_x = 1.0;
+	double gyro_y = 1.0;
+	double abs_acceleration = 0;
 	
 	private int previous_pitch;
 	private DRUM_STATE drum_state;
@@ -25,11 +29,18 @@ public class MyoDrum extends AbstractDeviceListener  {
 	private DrumHitListener drumListener;
 	private TextView tvReadings,tvCalib,tvDrumType;
 	
+	private KalmanFilter kalmanFilter1,kalmanFilter2;
+	
+	
+	
+	
 	public MyoDrum(DrumHitListener dListener, TextView tvReadings,TextView calib,TextView tvDrumType){
 		this.drumListener = dListener;
 		this.tvReadings = tvReadings;
 		this.tvCalib = calib;
 		this.tvDrumType = tvDrumType;
+		kalmanFilter1 = new KalmanFilter();
+		kalmanFilter2 = new KalmanFilter();
 	}
 	
 	 @Override
@@ -37,7 +48,7 @@ public class MyoDrum extends AbstractDeviceListener  {
          // Set the text color of the text view to cyan when a Myo connects.
 		 tvReadings.setTextColor(Color.BLACK);
 		 myo.vibrate(Myo.VibrationType.SHORT);
-       
+         
      }
 	 
 	 @Override
@@ -82,14 +93,26 @@ public class MyoDrum extends AbstractDeviceListener  {
 			 myo.vibrate(Myo.VibrationType.SHORT);
 			 calibrate_num++;
 			 if(calibrate_num >= 5) {
-				 calibrated = true;
-				 drum_state = DRUM_STATE.GOING_DOWN;
-				//tvCalib.setText("middle_yaw:" + MIDDLE_YAW + " left_yaw:" + LEFT_YAW + " right_yaw:" + RIGHT_YAW + " top_left:" + TOPLEFT_YAW + " top_right:" + TOPRIGHT_YAW );
+				calibrated = true;
+				drum_state = DRUM_STATE.GOING_DOWN;
 				tvCalib.setText("Calibrated");
+				kalmanFilter1.setAngle(yaw);
+				kalmanFilter2.setAngle(pitch);
+				calibrated = true;
 			 }			 
 		 }
 	 }
 	 
+	 @Override
+	 public void onGyroscopeData (Myo myo, long timestamp, Vector3 gyro){
+		gyro_x  = gyro.x();	
+		gyro_y = gyro.y();
+	 }
+	 
+	/* @Override
+	 public void onAccelerometerData (Myo myo, long timestamp, Vector3 accel){
+		 abs_acceleration = Math.sqrt(Math.pow(accel.x(), 2)+Math.pow(accel.y(), 2)+Math.pow(accel.z(), 2)); 
+	 }*/
 	 
 	 @Override
      public void onOrientationData(Myo myo, long timestamp, Quaternion rotation) {
@@ -98,16 +121,26 @@ public class MyoDrum extends AbstractDeviceListener  {
         float l_pitch = (float) Math.toDegrees(Quaternion.pitch(rotation));
         float l_yaw = (float) Math.toDegrees(Quaternion.yaw(rotation));  
         
-        roll = (int)((l_roll + (float)Math.PI)/(Math.PI * 2.0f));
-        pitch= (int)((l_pitch + (float)Math.PI/2.0f)/Math.PI);
-        yaw = (int)((l_yaw + (float)Math.PI)/(Math.PI * 2.0f));
+		if (!calibrated) {
+			roll = (int) ((l_roll + (float) Math.PI) / (Math.PI * 2.0f));
+			yaw = (int) ((l_yaw + (float) Math.PI) / (Math.PI * 2.0f));
+			pitch  = (int) ((l_pitch + (float) Math.PI / 2.0f) / Math.PI);
+		} else {
+			roll = (int) ((l_roll + (float) Math.PI) / (Math.PI * 2.0f));
+			float temp_yaw = (int) ((l_yaw + (float) Math.PI) / (Math.PI * 2.0f));
+			pitch  = (int) ((l_pitch + (float) Math.PI / 2.0f) / Math.PI);
+			yaw = (int) kalmanFilter1.getAngle(temp_yaw, gyro_x / 131, 0.05);
+			//pitch = (int) kalmanFilter1.getAngle(temp_pitch, gyro_y / 131, 0.1);
+		}
+       
         
-        
-       tvReadings.setText("Roll:" + roll + " Pitch:" + pitch + " Yaw:" + yaw);
+      
+      tvReadings.setText(" Roll:" + roll + " Pitch:" + pitch + " Yaw:" + yaw);
         if(calibrated){
         	if(drum_state == DRUM_STATE.GOING_DOWN && pitch < previous_pitch){
         		drum_state = DRUM_STATE.GOING_UP;
-        			if(pitch < LOW_PITCH + 5){
+        		
+        			if(pitch < LOW_PITCH + 4){
         				if(yaw > LEFT_YAW){
         					tvDrumType.setText("LEFT SNARE");
         					drumListener.OnDrumHit(0);
@@ -126,12 +159,13 @@ public class MyoDrum extends AbstractDeviceListener  {
         					tvDrumType.setText("MIDDLE CYMBAL");
         					drumListener.OnDrumHit(3);
         				}
-        			}
-
+        			
+        		}
         			
         	}else if(drum_state == DRUM_STATE.GOING_UP && pitch > previous_pitch){
                 drum_state = DRUM_STATE.GOING_DOWN;
             }
+        	previous_pitch = pitch;
         }
         previous_pitch = pitch;
         

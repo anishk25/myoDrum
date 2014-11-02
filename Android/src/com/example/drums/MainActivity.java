@@ -36,7 +36,14 @@ public class MainActivity extends ActionBarActivity implements DrumHitListener  
 	private Hub hub;
 	private static final int REQUEST_ENABLE_BT = 1;
 	private TextView textReadings, tvCalib,tvRSSI;
+	
+	private long start_time,end_time;
+	private AudioManager audioManager;
+	float actualVolume,maxVolume ,volume;
+	//private final float [] sound_rates = {1.5f,1.4f,2f,2f,1.3f};
+	private final float [] sound_rates = {2f,2f,2f,2f,2f};
 
+	@SuppressWarnings("deprecation")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -44,17 +51,7 @@ public class MainActivity extends ActionBarActivity implements DrumHitListener  
 		// Set the hardware buttons to control the music
 		this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 		// Load the sound
-		soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
-		soundPool.setOnLoadCompleteListener(new OnLoadCompleteListener() {
-			@Override
-			public void onLoadComplete(SoundPool soundPool, int sampleId,
-					int status) {
-				snare_loaded = true;
-				hh_loaded = true; 
-				ride_loaded = true;
-				crash_loaded = true;
-			}
-		});
+		initSounds();
 		loadSounds();
 		textReadings = (TextView)findViewById(R.id.myoText);
 		tvCalib = (TextView)findViewById(R.id.tvCalib);
@@ -64,6 +61,17 @@ public class MainActivity extends ActionBarActivity implements DrumHitListener  
 		loadMyoHub();
 	}
 	
+	
+	public void initSounds(){
+		audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+		soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
+		
+		actualVolume = (float) audioManager
+				.getStreamVolume(AudioManager.STREAM_MUSIC);
+		maxVolume = (float) audioManager
+				.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+		volume = actualVolume / maxVolume;
+	}
 	public void loadMyoHub(){
 		hub = Hub.getInstance();
         if (!hub.init(this, getPackageName())) {
@@ -72,8 +80,10 @@ public class MainActivity extends ActionBarActivity implements DrumHitListener  
             finish();
             return;
         }
+        
 
         // Next, register for DeviceListener callbacks.
+        start_time = System.nanoTime();
         Hub.getInstance().addListener((DeviceListener)myoDrum);
 	}
 	public void loadSounds(){
@@ -109,19 +119,10 @@ public class MainActivity extends ActionBarActivity implements DrumHitListener  
 
 	@Override
 	public void OnDrumHit(int drumNumber) {
-		AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-		float actualVolume = (float) audioManager
-				.getStreamVolume(AudioManager.STREAM_MUSIC);
-		float maxVolume = (float) audioManager
-				.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-		float volume = actualVolume / maxVolume;
-		// Is the sound loaded already?
-		if (snare_loaded) {
-			soundPool.play(soundIDS[drumNumber], volume, volume, 1, 0, 1f);
-			Log.e("Test", "Played sound");
-		}
-		
+		soundPool.play(soundIDS[drumNumber], volume, volume, 1, 0, sound_rates[drumNumber]);
 	}
+	
+	
 	
 	 @Override
 	    protected void onDestroy() {
@@ -156,5 +157,6 @@ public class MainActivity extends ActionBarActivity implements DrumHitListener  
 	        super.onActivityResult(requestCode, resultCode, data);
 	    }
 
+	
 
 }
