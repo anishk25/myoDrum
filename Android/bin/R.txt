@@ -449,10 +449,11 @@ int layout myosdk__fragment_scan 0x7f03001a
 int layout support_simple_spinner_dropdown_item 0x7f03001b
 int menu main 0x7f0d0000
 int menu myosdk__fragment_scan 0x7f0d0001
-int raw shortcrash 0x7f050000
-int raw shorthh 0x7f050001
-int raw shortride 0x7f050002
-int raw shortsnare 0x7f050003
+int raw floortom 0x7f050000
+int raw shortcrash 0x7f050001
+int raw shorthh 0x7f050002
+int raw shortride 0x7f050003
+int raw shortsnare 0x7f050004
 int string abc_action_bar_home_description 0x7f080006
 int string abc_action_bar_home_description_format 0x7f080009
 int string abc_action_bar_home_subtitle_description_format 0x7f08000a

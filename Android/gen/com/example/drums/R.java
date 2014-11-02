@@ -1783,10 +1783,11 @@ containing a value of this type.
         public static final int myosdk__fragment_scan=0x7f0d0001;
     }
     public static final class raw {
-        public static final int shortcrash=0x7f050000;
-        public static final int shorthh=0x7f050001;
-        public static final int shortride=0x7f050002;
-        public static final int shortsnare=0x7f050003;
+        public static final int floortom=0x7f050000;
+        public static final int shortcrash=0x7f050001;
+        public static final int shorthh=0x7f050002;
+        public static final int shortride=0x7f050003;
+        public static final int shortsnare=0x7f050004;
     }
     public static final class string {
         /**  Content description for the action bar "home" affordance. [CHAR LIMIT=NONE] 

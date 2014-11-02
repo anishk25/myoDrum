@@ -20,8 +20,8 @@ public class MyoDrum extends AbstractDeviceListener  {
 	
 	private int previous_pitch;
 	private DRUM_STATE drum_state;
-	private float LEFT_YAW,RIGHT_YAW,MIDDLE_YAW,TOPLEFT_YAW,TOPRIGHT_YAW,LOW_PITCH,TOPMIDDLE_PITCH,
-		TOPLEFT_PITCH, TOPRIGHT_PITCH;
+	private int LEFT_YAW,RIGHT_YAW,LOW_PITCH,TOP_LEFT_YAW,TOP_RIGHT_YAW,MIDDLE_YAW;
+	
 	private DrumHitListener drumListener;
 	private TextView tvReadings,tvCalib,tvDrumType;
 	
@@ -36,7 +36,7 @@ public class MyoDrum extends AbstractDeviceListener  {
      public void onConnect(Myo myo, long timestamp) {
          // Set the text color of the text view to cyan when a Myo connects.
 		 tvReadings.setTextColor(Color.BLACK);
-		 myo.vibrate(Myo.VibrationType.LONG);
+		 myo.vibrate(Myo.VibrationType.SHORT);
        
      }
 	 
@@ -63,31 +63,29 @@ public class MyoDrum extends AbstractDeviceListener  {
 		 if(pose == Pose.FIST && !calibrated){
 			 switch (calibrate_num) {
 			 case 0:
-				 MIDDLE_YAW = yaw;
+				 LOW_PITCH = pitch;
+				 MIDDLE_YAW = yaw;          
 				 break;
 			 case 1:
 				 LEFT_YAW = yaw;
 				 break;
 			 case 2:
-				 TOPLEFT_YAW = yaw;
-				 TOPLEFT_PITCH = pitch;
+				 TOP_LEFT_YAW = yaw;
 				 break;
 			 case 3:
-				 TOPMIDDLE_PITCH = pitch;
+				 TOP_RIGHT_YAW = yaw;
 				 break;
 			 case 4:
-				 TOPRIGHT_YAW = yaw;
-				 break;
-			 case 5:
 				 RIGHT_YAW = yaw;
 				 break;
 			 }
-			 myo.vibrate(Myo.VibrationType.MEDIUM);
+			 myo.vibrate(Myo.VibrationType.SHORT);
 			 calibrate_num++;
-			 if(calibrate_num >= 6) {
+			 if(calibrate_num >= 5) {
 				 calibrated = true;
 				 drum_state = DRUM_STATE.GOING_DOWN;
-				 tvCalib.setText("middle_yaw:" + MIDDLE_YAW + " left_yaw:" + LEFT_YAW + " right_yaw:" + RIGHT_YAW + " top_left:" + TOPLEFT_YAW + " top_right:" + TOPRIGHT_YAW );
+				//tvCalib.setText("middle_yaw:" + MIDDLE_YAW + " left_yaw:" + LEFT_YAW + " right_yaw:" + RIGHT_YAW + " top_left:" + TOPLEFT_YAW + " top_right:" + TOPRIGHT_YAW );
+				tvCalib.setText("Calibrated");
 			 }			 
 		 }
 	 }
@@ -103,37 +101,34 @@ public class MyoDrum extends AbstractDeviceListener  {
         roll = (int)((l_roll + (float)Math.PI)/(Math.PI * 2.0f));
         pitch= (int)((l_pitch + (float)Math.PI/2.0f)/Math.PI);
         yaw = (int)((l_yaw + (float)Math.PI)/(Math.PI * 2.0f));
-        myo.requestRssi();
+        
         
        tvReadings.setText("Roll:" + roll + " Pitch:" + pitch + " Yaw:" + yaw);
         if(calibrated){
         	if(drum_state == DRUM_STATE.GOING_DOWN && pitch < previous_pitch){
         		drum_state = DRUM_STATE.GOING_UP;
-        		if(pitch >= TOPMIDDLE_PITCH) { //top
-        			if(yaw >= TOPLEFT_YAW) {
-        				drumListener.OnDrumHit(1);
-        				tvDrumType.setText("LEFT CYMBAL");
-            		}
-        			else if(yaw <= TOPRIGHT_YAW) {
-        				drumListener.OnDrumHit(2);
-        				tvDrumType.setText("RIGHT CYMBAL");
+        			if(pitch < LOW_PITCH + 5){
+        				if(yaw > LEFT_YAW){
+        					tvDrumType.setText("LEFT SNARE");
+        					drumListener.OnDrumHit(0);
+        				}else if(yaw < RIGHT_YAW){
+        					tvDrumType.setText("RIGHT SNARE");
+        					drumListener.OnDrumHit(4);
+        				}
+        			}else if(pitch > LOW_PITCH + 10){
+        				if(yaw > TOP_LEFT_YAW){
+        					tvDrumType.setText("LEFT CYMBAL");
+        					drumListener.OnDrumHit(1);
+        				}else if(yaw < TOP_RIGHT_YAW){
+        					tvDrumType.setText("RIGHT CYMBAL");
+        					drumListener.OnDrumHit(2);
+        				}else{
+        					tvDrumType.setText("MIDDLE CYMBAL");
+        					drumListener.OnDrumHit(3);
+        				}
         			}
-        			else {
-        				drumListener.OnDrumHit(3);
-        				tvDrumType.setText("MIDDLE CYMBAL");
-        			}
-        		}
-        		else if(pitch <= LOW_PITCH + 10){ //bottom
-        			if(yaw >= LEFT_YAW) {
-        				drumListener.OnDrumHit(0);
-        				tvDrumType.setText("LEFT SNARE");
-            		}
-        			else if(yaw <= RIGHT_YAW) {
-        				drumListener.OnDrumHit(0);
-        				tvDrumType.setText("RIGHT SNARE");
-        			}
-        		}
-        		
+
+        			
         	}else if(drum_state == DRUM_STATE.GOING_UP && pitch > previous_pitch){
                 drum_state = DRUM_STATE.GOING_DOWN;
             }

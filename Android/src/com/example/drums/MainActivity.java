@@ -30,7 +30,7 @@ public class MainActivity extends ActionBarActivity implements DrumHitListener  
 	boolean snare_loaded = false;
 	boolean hh_loaded = false;
 	
-	private int [] soundIDS = new int [4];
+	private int [] soundIDS = new int [5];
 	private static final String TAG = "MainActivity";
 	private MyoDrum myoDrum;
 	private Hub hub;
@@ -81,6 +81,7 @@ public class MainActivity extends ActionBarActivity implements DrumHitListener  
 		soundIDS[1] = soundPool.load(this, R.raw.shorthh, 1);
 		soundIDS[2] = soundPool.load(this,  R.raw.shortride, 1);
 		soundIDS[3] = soundPool.load(this, R.raw.shortcrash, 1);
+		soundIDS[4] = soundPool.load(this, R.raw.floortom,1);
 	}
 
 	public void onPrepared(MediaPlayer player) {
